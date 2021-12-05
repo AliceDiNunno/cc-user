@@ -7,8 +7,8 @@ import (
 	"github.com/AliceDiNunno/cc-user/src/adapters/rest"
 	"github.com/AliceDiNunno/cc-user/src/config"
 	"github.com/AliceDiNunno/cc-user/src/core/usecases"
+	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
-	"log"
 	"math/big"
 )
 
@@ -56,7 +56,10 @@ func main() {
 	routesHandler := rest.NewRouter(usecasesHandler)
 
 	if initialUserConfiguration != nil {
-		usecasesHandler.CreateInitialUser(initialUserConfiguration)
+		err := usecasesHandler.CreateInitialUser(initialUserConfiguration)
+		if err != nil {
+			log.Warning(err.Err.Error())
+		}
 	}
 
 	rest.SetRoutes(restServer, routesHandler)

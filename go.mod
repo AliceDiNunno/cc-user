@@ -10,6 +10,7 @@ require (
 	github.com/joho/godotenv v1.4.0
 	github.com/lib/pq v1.10.4
 	github.com/sirupsen/logrus v1.8.1
+	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
 	gorm.io/driver/postgres v1.2.3
 	gorm.io/gorm v1.22.4
 )
@@ -39,7 +40,6 @@ require (
 	github.com/modern-go/reflect2 v1.0.1 // indirect
 	github.com/ugorji/go/codec v1.1.7 // indirect
 	go.uber.org/atomic v1.6.0 // indirect
-	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519 // indirect
 	golang.org/x/sys v0.0.0-20211013075003-97ac67df715c // indirect
 	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect

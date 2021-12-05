@@ -14,7 +14,15 @@ type User struct {
 	Password string
 }
 
-func (u userRepo) createUser(user *domain.User) *e.Error {
+func (u userRepo) IsEmpty() bool {
+	var count int64
+
+	u.db.Model(&User{}).Count(&count)
+
+	return count == 0
+}
+
+func (u userRepo) CreateUser(user *domain.User) *e.Error {
 	userToCreate := userFromDomain(user)
 
 	result := u.db.Create(userToCreate)

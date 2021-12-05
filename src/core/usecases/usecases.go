@@ -8,5 +8,5 @@ import (
 
 type Usecases interface {
 	CreateInitialUser(user *config.InitialUserConfig) *e.Error
-	CreateUser(user *domain.UserCreationRequest) e.Error
+	CreateUser(user *domain.UserCreationRequest) *e.Error
 }
