@@ -7,9 +7,15 @@ type Logger interface {
 	Debug(args ...interface{})
 }
 
-type interactor struct {
+type UserRepo interface {
 }
 
-func NewInteractor() interactor {
-	return interactor{}
+type interactor struct {
+	userRepo UserRepo
+}
+
+func NewInteractor(u UserRepo) interactor {
+	return interactor{
+		userRepo: u,
+	}
 }

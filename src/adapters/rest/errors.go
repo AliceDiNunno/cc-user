@@ -73,7 +73,7 @@ func (rH RoutesHandler) handleError(c *gin.Context, err error) {
 	authenticatedUser := rH.getAuthenticatedUser(c)
 
 	if authenticatedUser != nil {
-		fields["user_id"] = authenticatedUser.UserID
+		fields["user_id"] = authenticatedUser.ID
 	}
 
 	log.WithFields(fields).Error(errors.New(errName))

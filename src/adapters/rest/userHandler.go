@@ -20,7 +20,7 @@ func (rH RoutesHandler) fetchingUserMiddleware() gin.HandlerFunc {
 		}
 
 		user := domain.User{
-			UserID: id,
+			ID: id,
 		}
 		c.Set("authenticatedUser", user)
 		c.Next()
