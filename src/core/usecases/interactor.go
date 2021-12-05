@@ -17,12 +17,18 @@ type UserRepo interface {
 	CreateUser(user *domain.User) *e.Error
 }
 
-type interactor struct {
-	userRepo UserRepo
+type UserTokenRepo interface {
+	CreateToken(token *domain.UserToken) *e.Error
 }
 
-func NewInteractor(u UserRepo) interactor {
+type interactor struct {
+	userRepo      UserRepo
+	userTokenRepo UserTokenRepo
+}
+
+func NewInteractor(u UserRepo, ut UserTokenRepo) interactor {
 	return interactor{
-		userRepo: u,
+		userRepo:      u,
+		userTokenRepo: ut,
 	}
 }

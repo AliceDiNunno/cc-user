@@ -7,11 +7,16 @@ import (
 )
 import "github.com/google/uuid"
 
+type userRepo struct {
+	db *gorm.DB
+}
+
 type User struct {
 	gorm.Model
 	ID       uuid.UUID `gorm:"type:uuid;primary_key"`
 	Mail     string
 	Password string
+	Tokens   []*UserToken
 }
 
 func (u userRepo) IsEmpty() bool {
@@ -32,10 +37,6 @@ func (u userRepo) CreateUser(user *domain.User) *e.Error {
 	}
 
 	return nil
-}
-
-type userRepo struct {
-	db *gorm.DB
 }
 
 func userToDomain(user *User) *domain.User {

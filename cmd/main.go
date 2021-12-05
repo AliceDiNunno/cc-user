@@ -34,23 +34,23 @@ func main() {
 	initialUserConfiguration := config.LoadInitialUserConfiguration()
 
 	var userRepo usecases.UserRepo
+	var tokenRepo usecases.UserTokenRepo
 
 	var db *gorm.DB
 	if dbConfig.Engine == "POSTGRES" {
 		db = postgres.StartGormDatabase(dbConfig)
-		err := db.AutoMigrate(&postgres.User{})
+		err := db.AutoMigrate(&postgres.User{}, &postgres.UserToken{})
 		if err != nil {
 			log.Fatalln(err)
 		}
 
 		userRepo = postgres.NewUserRepo(db)
+		tokenRepo = postgres.NewUserTokenRepo(db)
 	} else {
 		log.Fatalln(fmt.Sprintf("Database engine \"%s\" not supported", dbConfig.Engine))
 	}
 
-	_ = db
-
-	usecasesHandler := usecases.NewInteractor(userRepo)
+	usecasesHandler := usecases.NewInteractor(userRepo, tokenRepo)
 
 	restServer := rest.NewServer(ginConfiguration)
 	routesHandler := rest.NewRouter(usecasesHandler)
