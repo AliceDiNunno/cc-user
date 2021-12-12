@@ -11,20 +11,20 @@ func (i interactor) CreateUser(user *domain.UserCreationRequest) *e.Error {
 	panic("implement me")
 }
 
-func (i interactor) CreateInitialUser(user *config.InitialUserConfig) *e.Error {
+func (i interactor) CreateInitialUser(initialUser *config.InitialUserConfig) *e.Error {
 	//TODO: check if there are no admins instead of just checking if there are no users
 	if !i.userRepo.IsEmpty() {
 		return e.Wrap(domain.ErrCannotCreateInitialUserIfUserTableNotEmpty)
 	}
 
-	hash, stderr := crypto.HashAndSalt(user.Password)
+	hash, stderr := crypto.HashAndSalt(initialUser.Password)
 
 	if stderr != nil {
 		return e.Wrap(stderr)
 	}
 
 	userToCreate := &domain.User{
-		Mail:     user.Mail,
+		Mail:     initialUser.Mail,
 		Password: hash,
 	}
 
@@ -36,16 +36,16 @@ func (i interactor) CreateInitialUser(user *config.InitialUserConfig) *e.Error {
 		return err
 	}
 
-	hashedToken, stderr := crypto.HashAndSalt(user.AccessToken)
+	hashedToken, stderr := crypto.HashAndSalt(initialUser.AccessToken)
 
 	if stderr != nil {
 		return e.Wrap(stderr)
 	}
 
-	tokenToCreate := &domain.UserToken{
-		User:  userToCreate,
-		Token: hashedToken,
-		Name:  "InternalUse",
+	tokenToCreate := &domain.AccessToken{
+		User:              userToCreate,
+		Token:             hashedToken,
+		IsPersonnalAccess: true,
 	}
 
 	tokenToCreate.Initialize()

@@ -13,14 +13,15 @@ type userTokenRepo struct {
 
 type UserToken struct {
 	gorm.Model
-	ID     uuid.UUID `gorm:"type:uuid;primary_key"`
-	Token  string
-	Name   string
-	UserId uuid.UUID
-	User   *User
+	ID                uuid.UUID `gorm:"type:uuid;primary_key"`
+	Token             string
+	UserID            uuid.UUID
+	User              *User
+	IsPersonnalAccess bool
+	JwtSignature      []*JwtSignature
 }
 
-func (u userTokenRepo) CreateToken(token *domain.UserToken) *e.Error {
+func (u userTokenRepo) CreateToken(token *domain.AccessToken) *e.Error {
 	userTokenToCreate := userTokenFromDomain(token)
 
 	result := u.db.Create(userTokenToCreate)
@@ -32,22 +33,46 @@ func (u userTokenRepo) CreateToken(token *domain.UserToken) *e.Error {
 	return nil
 }
 
-func userTokenToDomain(user *UserToken) *domain.UserToken {
-	return &domain.UserToken{
-		ID:    user.ID,
-		Token: user.Token,
-		Name:  user.Name,
-		User:  userToDomain(user.User),
+func (u userTokenRepo) FindByToken(token string) (*domain.AccessToken, *e.Error) {
+	userToken := &UserToken{}
+
+	result := u.db.Joins("User").Preload("JwtSignature").Where("token = ?", token).First(userToken)
+
+	if result.Error != nil {
+		return nil, e.Wrap(result.Error)
+	}
+
+	return userTokenToDomain(userToken), nil
+}
+
+func userTokenToDomain(userToken *UserToken) *domain.AccessToken {
+	if userToken == nil {
+		return nil
+	}
+
+	var user *domain.User = nil
+
+	if userToken.User != nil {
+		user = userToDomain(userToken.User)
+	}
+
+	return &domain.AccessToken{
+		CreatedAt:         userToken.CreatedAt,
+		ID:                userToken.ID,
+		Token:             userToken.Token,
+		User:              user,
+		IsPersonnalAccess: userToken.IsPersonnalAccess,
+		JwtGenerated:      jwtSignaturesToDomain(userToken.JwtSignature),
 	}
 }
 
-func userTokenFromDomain(user *domain.UserToken) *UserToken {
+func userTokenFromDomain(user *domain.AccessToken) *UserToken {
 	return &UserToken{
-		ID:     user.ID,
-		Token:  user.Token,
-		Name:   user.Name,
-		UserId: user.ID,
-		User:   userFromDomain(user.User),
+		ID:                user.ID,
+		Token:             user.Token,
+		UserID:            user.ID,
+		User:              userFromDomain(user.User),
+		IsPersonnalAccess: user.IsPersonnalAccess,
 	}
 }
 

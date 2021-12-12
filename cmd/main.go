@@ -1,7 +1,6 @@
 package main
 
 import (
-	"crypto/rand"
 	"fmt"
 	"github.com/AliceDiNunno/cc-user/src/adapters/persistence/postgres"
 	"github.com/AliceDiNunno/cc-user/src/adapters/rest"
@@ -9,22 +8,7 @@ import (
 	"github.com/AliceDiNunno/cc-user/src/core/usecases"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
-	"math/big"
 )
-
-func GenerateRandomString(n int) (string, error) {
-	const letters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-"
-	ret := make([]byte, n)
-	for i := 0; i < n; i++ {
-		num, err := rand.Int(rand.Reader, big.NewInt(int64(len(letters))))
-		if err != nil {
-			return "", err
-		}
-		ret = append(ret, letters[num.Int64()])
-	}
-
-	return string(ret), nil
-}
 
 func main() {
 	config.LoadEnv()
@@ -35,22 +19,24 @@ func main() {
 
 	var userRepo usecases.UserRepo
 	var tokenRepo usecases.UserTokenRepo
+	var jwtSignatureRepo usecases.JwtSignatureRepo
 
 	var db *gorm.DB
 	if dbConfig.Engine == "POSTGRES" {
 		db = postgres.StartGormDatabase(dbConfig)
-		err := db.AutoMigrate(&postgres.User{}, &postgres.UserToken{})
+		err := db.AutoMigrate(&postgres.User{}, &postgres.JwtSignature{}, &postgres.UserToken{})
 		if err != nil {
 			log.Fatalln(err)
 		}
 
 		userRepo = postgres.NewUserRepo(db)
 		tokenRepo = postgres.NewUserTokenRepo(db)
+		jwtSignatureRepo = postgres.NewJwtSignatureRepo(db)
 	} else {
 		log.Fatalln(fmt.Sprintf("Database engine \"%s\" not supported", dbConfig.Engine))
 	}
 
-	usecasesHandler := usecases.NewInteractor(userRepo, tokenRepo)
+	usecasesHandler := usecases.NewInteractor(userRepo, tokenRepo, jwtSignatureRepo)
 
 	restServer := rest.NewServer(ginConfiguration)
 	routesHandler := rest.NewRouter(usecasesHandler)

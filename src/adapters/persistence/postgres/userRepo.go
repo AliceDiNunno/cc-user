@@ -39,7 +39,22 @@ func (u userRepo) CreateUser(user *domain.User) *e.Error {
 	return nil
 }
 
+func (u userRepo) FindByMail(mail string) (*domain.User, *e.Error) {
+	var user User
+
+	result := u.db.Where("mail = ?", mail).First(&user)
+
+	if result.Error != nil {
+		return nil, e.Wrap(result.Error)
+	}
+
+	return userToDomain(&user), nil
+}
+
 func userToDomain(user *User) *domain.User {
+	if user == nil {
+		return nil
+	}
 	return &domain.User{
 		ID:       user.ID,
 		Mail:     user.Mail,
@@ -48,6 +63,9 @@ func userToDomain(user *User) *domain.User {
 }
 
 func userFromDomain(user *domain.User) *User {
+	if user == nil {
+		return nil
+	}
 	return &User{
 		ID:       user.ID,
 		Mail:     user.Mail,

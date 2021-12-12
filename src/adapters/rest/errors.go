@@ -3,6 +3,7 @@ package rest
 import (
 	"errors"
 	"github.com/AliceDiNunno/cc-user/src/core/domain"
+	e "github.com/AliceDiNunno/go-nested-traced-error"
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 	"net/http"
@@ -11,8 +12,10 @@ import (
 )
 
 var (
-	ErrFormValidation = errors.New("failed to validate form")
-	ErrNotFound       = errors.New("endpoint not found")
+	ErrFormValidation             = errors.New("failed to validate form")
+	ErrNotFound                   = errors.New("endpoint not found")
+	ErrAuthorizationHeaderMissing = errors.New("authorization header missing")
+	ErrInvalidAuthorizationHeader = errors.New("invalid authorization header")
 )
 
 func getFrame(skipFrames int) runtime.Frame {
@@ -59,10 +62,8 @@ func getFunctionName(depth int) string {
 	return specifiedFunctionName
 }
 
-func (rH RoutesHandler) handleError(c *gin.Context, err error) {
-	var depth = 2
-	errName := getFunctionName(depth) + ": " + err.Error()
-	code := codeForError(err)
+func (rH RoutesHandler) handleError(c *gin.Context, err *e.Error) {
+	code := codeForError(err.Err)
 
 	fields := log.Fields{
 		"code": code,
@@ -74,15 +75,16 @@ func (rH RoutesHandler) handleError(c *gin.Context, err error) {
 
 	if authenticatedUser != nil {
 		fields["user_id"] = authenticatedUser.ID
+		fields["err"] = &err
 	}
 
-	log.WithFields(fields).Error(errors.New(errName))
+	log.WithFields(fields).Error(err.Err.Error())
 	c.AbortWithStatusJSON(code, domain.Status{
 		Success: false,
-		Message: err.Error(),
+		Message: err.Err.Error(),
 	})
 }
 
 func (rH RoutesHandler) endpointNotFound(c *gin.Context) {
-	rH.handleError(c, ErrNotFound)
+	rH.handleError(c, e.Wrap(ErrNotFound))
 }

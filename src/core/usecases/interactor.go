@@ -15,20 +15,29 @@ type Logger interface {
 type UserRepo interface {
 	IsEmpty() bool
 	CreateUser(user *domain.User) *e.Error
+	FindByMail(mail string) (*domain.User, *e.Error)
 }
 
 type UserTokenRepo interface {
-	CreateToken(token *domain.UserToken) *e.Error
+	CreateToken(token *domain.AccessToken) *e.Error
+	FindByToken(token string) (*domain.AccessToken, *e.Error)
+}
+
+type JwtSignatureRepo interface {
+	SaveSignature(signature *domain.JwtSignature) *e.Error
+	CheckIfSignatureExists(signature string) bool
 }
 
 type interactor struct {
 	userRepo      UserRepo
 	userTokenRepo UserTokenRepo
+	jwtSignature  JwtSignatureRepo
 }
 
-func NewInteractor(u UserRepo, ut UserTokenRepo) interactor {
+func NewInteractor(u UserRepo, ut UserTokenRepo, js JwtSignatureRepo) interactor {
 	return interactor{
 		userRepo:      u,
 		userTokenRepo: ut,
+		jwtSignature:  js,
 	}
 }

@@ -4,6 +4,7 @@ go 1.17
 
 require (
 	github.com/AliceDiNunno/go-nested-traced-error v1.1.0
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gin-gonic/gin v1.7.7
 	github.com/golang-migrate/migrate/v4 v4.15.1
 	github.com/google/uuid v1.3.0
